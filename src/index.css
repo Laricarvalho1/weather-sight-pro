@@ -55,6 +55,12 @@ All colors MUST be HSL.
     --shadow-card: 0 4px 24px hsl(220 26% 0% / 0.4);
     
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+    --chart-1: 195 90% 55%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
   }
 }
 
@@ -95,4 +101,16 @@ All colors MUST be HSL.
   .text-glow {
     text-shadow: 0 0 20px hsl(var(--primary) / 0.5);
   }
+}
+
+/* Leaflet overrides for dark theme */
+.leaflet-container {
+  background: hsl(var(--secondary));
+}
+
+.leaflet-popup-content-wrapper,
+.leaflet-popup-tip {
+  background: hsl(var(--card));
+  color: hsl(var(--foreground));
+  border: 1px solid hsl(var(--border));
 }

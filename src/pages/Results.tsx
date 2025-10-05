@@ -1,14 +1,21 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowRight, Droplets, Wind, Thermometer } from "lucide-react";
+import { ArrowRight, Droplets, Wind, Thermometer, ArrowLeft, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import WeatherAnimation from "@/components/WeatherAnimation";
 import ProbabilityCard from "@/components/ProbabilityCard";
+import ComfortPanel from "@/components/ComfortPanel";
+import ExportButton from "@/components/ExportButton";
+import ShareButton from "@/components/ShareButton";
+import UnitsModal from "@/components/UnitsModal";
+import HistoricalChart from "@/components/HistoricalChart";
+import { useState } from "react";
 
 const Results = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { location: city, date } = location.state || {};
+  const [showMoreInfo, setShowMoreInfo] = useState(false);
 
   // Mock data - será substituído pela API Python
   const weatherData = {
@@ -27,8 +34,26 @@ const Results = () => {
   ];
 
   return (
-    <div className="min-h-screen w-full bg-background flex items-center justify-center p-4 md:p-8">
-      <div className="w-full max-w-7xl grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
+    <div className="min-h-screen w-full bg-background p-4 md:p-8">
+      {/* Top Navigation */}
+      <div className="max-w-7xl mx-auto mb-6 flex justify-between items-center">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => navigate("/")}
+          className="gap-2"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Voltar
+        </Button>
+        <div className="flex gap-2">
+          <ExportButton data={weatherData} location={city || "Localização"} />
+          <ShareButton location={city || "Localização"} />
+          <UnitsModal />
+        </div>
+      </div>
+
+      <div className="w-full max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
         {/* Left Side - Weather Animation & Data */}
         <motion.div
           initial={{ opacity: 0, x: -50 }}
@@ -65,7 +90,7 @@ const Results = () => {
           </div>
         </motion.div>
 
-        {/* Right Side - Probabilities */}
+        {/* Right Side - Comfort & Probabilities */}
         <motion.div
           initial={{ opacity: 0, x: 50 }}
           animate={{ opacity: 1, x: 0 }}
@@ -80,6 +105,9 @@ const Results = () => {
               {city} - {date ? new Date(date).toLocaleDateString('pt-BR') : ''}
             </p>
           </div>
+
+          {/* Comfort Panel */}
+          <ComfortPanel temperature={weatherData.temperature} humidity={weatherData.humidity} />
 
           <div className="space-y-4">
             <h2 className="text-2xl font-semibold text-foreground mb-4">
@@ -102,15 +130,38 @@ const Results = () => {
             ))}
           </div>
 
-          <Button
-            onClick={() => navigate("/recommendations", { state: location.state })}
-            className="w-full gradient-primary text-primary-foreground font-semibold py-6 text-lg"
-          >
-            Ver Recomendações
-            <ArrowRight className="ml-2 h-5 w-5" />
-          </Button>
+          {/* Bottom Action Buttons */}
+          <div className="grid grid-cols-2 gap-4">
+            <Button
+              onClick={() => setShowMoreInfo(!showMoreInfo)}
+              variant="outline"
+              className="font-semibold py-6 text-lg border-primary text-primary hover:bg-primary/10"
+            >
+              <Info className="mr-2 h-5 w-5" />
+              {showMoreInfo ? "Menos Info" : "Mais Info"}
+            </Button>
+            <Button
+              onClick={() => navigate("/recommendations", { state: location.state })}
+              className="gradient-primary text-primary-foreground font-semibold py-6 text-lg"
+            >
+              Ver Recomendações
+              <ArrowRight className="ml-2 h-5 w-5" />
+            </Button>
+          </div>
         </motion.div>
       </div>
+
+      {/* Historical Chart - Expandable Section */}
+      {showMoreInfo && (
+        <motion.div
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: "auto" }}
+          exit={{ opacity: 0, height: 0 }}
+          className="max-w-7xl mx-auto mt-8"
+        >
+          <HistoricalChart />
+        </motion.div>
+      )}
     </div>
   );
 };

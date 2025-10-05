@@ -10,15 +10,40 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import GlobeAnimation from "@/components/GlobeAnimation";
 import WeatherSummary from "@/components/WeatherSummary";
+import MapSelector from "@/components/MapSelector";
+import ClimateFactsWidget from "@/components/ClimateFactsWidget";
 
 const Search = () => {
   const navigate = useNavigate();
   const [location, setLocation] = useState("");
   const [date, setDate] = useState<Date>();
+  const [mapPosition, setMapPosition] = useState<[number, number]>([-10.9472, -37.0731]); // Aracaju default
 
   const handleSearch = () => {
     if (location && date) {
-      navigate("/results", { state: { location, date: date.toISOString() } });
+      navigate("/results", { 
+        state: { 
+          location, 
+          date: date.toISOString(),
+          coordinates: mapPosition 
+        } 
+      });
+    }
+  };
+
+  const handleMapPositionChange = async (lat: number, lng: number) => {
+    setMapPosition([lat, lng]);
+    
+    // Reverse geocoding to get location name
+    try {
+      const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`);
+      const data = await response.json();
+      const city = data.address.city || data.address.town || data.address.village || data.address.county;
+      if (city) {
+        setLocation(city);
+      }
+    } catch (error) {
+      console.error("Error getting location name:", error);
     }
   };
 
@@ -34,6 +59,7 @@ const Search = () => {
         >
           <GlobeAnimation />
           <WeatherSummary />
+          <ClimateFactsWidget />
         </motion.div>
 
         {/* Right Side - Search Form */}
@@ -93,6 +119,17 @@ const Search = () => {
                   />
                 </PopoverContent>
               </Popover>
+            </div>
+
+            {/* Map Selector */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-foreground">
+                Selecione no mapa ou arraste o marcador
+              </label>
+              <MapSelector position={mapPosition} onPositionChange={handleMapPositionChange} />
+              <p className="text-xs text-muted-foreground">
+                Coordenadas: {mapPosition[0].toFixed(4)}, {mapPosition[1].toFixed(4)}
+              </p>
             </div>
 
             {/* Search Button */}
