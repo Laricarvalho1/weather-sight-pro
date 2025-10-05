@@ -7,13 +7,11 @@ import { Input } from "@/components/ui/input";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { format, getYear, getMonth, setYear, setMonth, addYears, subYears } from "date-fns";
-import { enUS } from "date-fns/locale"; // Changed from ptBR to enUS
+import { enUS } from "date-fns/locale"; 
 import GlobeAnimation from "@/components/GlobeAnimation";
 
-// Helper to capitalize the first letter
 const capitalize = (s) => s.charAt(0).toUpperCase() + s.slice(1);
 
-// NEW: A small component for the dynamic tips on the left side
 const TIPS = [
   {
     icon: Zap,
@@ -38,9 +36,9 @@ const TipCarousel = () => {
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentTipIndex((prevIndex) => (prevIndex + 1) % TIPS.length);
-    }, 7000); // Change tip every 7 seconds
+    }, 5000);
 
-    return () => clearInterval(interval); // Cleanup on component unmount
+    return () => clearInterval(interval); 
   }, []);
 
   const activeTip = TIPS[currentTipIndex];
@@ -71,14 +69,12 @@ const TipCarousel = () => {
 const Search = () => {
   const navigate = useNavigate();
   
-  // --- STATES ---
   const [locationInput, setLocationInput] = useState("");
   const [date, setDate] = useState(undefined);
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [view, setView] = useState('days');
   const [displayDate, setDisplayDate] = useState(date || new Date());
 
-  // --- HANDLERS ---
   const handleDateSelect = (selectedDate) => {
     setDate(selectedDate);
     setIsCalendarOpen(false);
@@ -86,7 +82,6 @@ const Search = () => {
   };
 
   const handleSearch = () => {
-    // Navigate with state if both inputs are filled
     if (locationInput && date) {
       navigate("/results", { 
         state: { location: locationInput, date: date.toISOString() } 
@@ -94,14 +89,12 @@ const Search = () => {
     }
   };
 
-  // Logic for the calendar's year view
   const startYearOfDecade = getYear(displayDate) - (getYear(displayDate) % 10);
   const years = Array.from({ length: 12 }, (_, i) => startYearOfDecade + i - 1);
 
   return (
     <div className="min-h-screen w-full bg-background flex items-center justify-center p-4 md:p-8">
       <div className="w-full max-w-7xl grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
-        {/* Left Side - Globe Animation & NEW Tip Carousel */}
         <motion.div
           initial={{ opacity: 0, x: -50 }}
           animate={{ opacity: 1, x: 0 }}
