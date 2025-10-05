@@ -16,14 +16,14 @@ interface MapSelectorProps {
   onPositionChange: (lat: number, lng: number) => void;
 }
 
-const MapEvents = ({ onPositionChange }: { onPositionChange: (lat: number, lng: number) => void }) => {
-  useMapEvents({
+function MapEvents({ onPositionChange }: { onPositionChange: (lat: number, lng: number) => void }) {
+  const map = useMapEvents({
     click(e) {
       onPositionChange(e.latlng.lat, e.latlng.lng);
     },
   });
   return null;
-};
+}
 
 const MapSelector = ({ position, onPositionChange }: MapSelectorProps) => {
   useEffect(() => {
@@ -46,10 +46,10 @@ const MapSelector = ({ position, onPositionChange }: MapSelectorProps) => {
         center={position}
         zoom={6}
         style={{ height: "100%", width: "100%" }}
-        className="z-0"
+        scrollWheelZoom={true}
       >
         <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
         <Marker position={position} />
