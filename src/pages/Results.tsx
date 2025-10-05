@@ -1,63 +1,75 @@
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { 
-  ArrowRight, 
-  Droplets, 
-  Wind, 
-  Thermometer, 
-  ArrowLeft, 
-  Loader2, 
-  AlertTriangle, 
-  Satellite 
-} from "lucide-react";
+import { ArrowRight, Droplets, Wind, Thermometer, ArrowLeft, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import WeatherAnimation from "@/components/WeatherAnimation";
 import ProbabilityCard from "@/components/ProbabilityCard";
-import RecommendationCard from "@/components/RecommendationCard";
-import { getRecommendations } from "@/lib/recommendations";
-
-// Helper function to calculate the comfort level
-const calculateComfortLevel = (weather, probs) => {
-  if (!weather || !probs) return null;
-
-  let score = 100;
-
-  const hotProb = probs.find(p => p.label.includes("Hot"))?.value || 0;
-  const coldProb = probs.find(p => p.label.includes("Cold"))?.value || 0;
-  const rainProb = probs.find(p => p.label.includes("Rain"))?.value || 0;
-  const windProb = probs.find(p => p.label.includes("Wind"))?.value || 0;
-
-  // Subtract points based on probabilities
-  score -= hotProb * 1.2;
-  score -= coldProb * 1.0;
-  score -= rainProb * 0.6;
-  score -= windProb * 0.5;
-
-  // Subtract points for high humidity
-  if (weather.humidity > 75) {
-    score -= (weather.humidity - 75) * 0.5;
-  }
-  
-  // Return the level and emoji based on the final score
-  if (score >= 80) return { level: 'Very Comfortable', emoji: '😊' };
-  if (score >= 60) return { level: 'Comfortable', emoji: '🙂' };
-  if (score >= 40) return { level: 'Uncomfortable', emoji: '😕' };
-  return { level: 'Very Uncomfortable', emoji: '😫' };
-};
+import ComfortPanel from "@/components/ComfortPanel";
+import ExportButton from "@/components/ExportButton";
+import ShareButton from "@/components/ShareButton";
+import UnitsModal from "@/components/UnitsModal";
+import HistoricalChart from "@/components/HistoricalChart";
+import { useState } from "react";
 
 const Results = () => {
   const navigate = useNavigate();
-  const { state } = useLocation();
-  const { location, date } = state || {};
+  const location = useLocation();
+  const { location: city, date } = location.state || {};
+  const [showMoreInfo, setShowMoreInfo] = useState(false);
 
-  const [weatherData, setWeatherData] = useState(null);
-  const [probabilities, setProbabilities] = useState([]);
-  const [comfortLevel, setComfortLevel] = useState(null);
-  const [nasaUrl, setNasaUrl] = useState('');
-  const [recommendations, setRecommendations] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
+  // Mock data - será substituído pela API Python
+  const weatherData = {
+    condition: "sunny" as const,
+    temperature: 32,
+    humidity: 65,
+    rainfall: 0,
+    wind: 15,
+  };
+
+  const probabilities = [
+    { label: "Muito Quente", value: 85, type: "danger" as const },
+    { label: "Muita Chuva", value: 20, type: "info" as const },
+    { label: "Muito Vento", value: 35, type: "info" as const },
+    { label: "Muito Desconfortável", value: 70, type: "danger" as const },
+  ];
+
+  return (
+    <div className="min-h-screen w-full bg-background p-4 md:p-8">
+      {/* Top Navigation */}
+      <div className="max-w-7xl mx-auto mb-6 flex justify-between items-center">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => navigate("/")}
+          className="gap-2"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Voltar
+        </Button>
+        <div className="flex gap-2">
+          <ExportButton data={weatherData} location={city || "Localização"} />
+          <ShareButton location={city || "Localização"} />
+          <UnitsModal />
+        </div>
+      </div>
+
+      <div className="w-full max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
+        {/* Left Side - Weather Animation & Data */}
+        <motion.div
+          initial={{ opacity: 0, x: -50 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.6 }}
+          className="flex flex-col items-center justify-center space-y-8"
+        >
+          <WeatherAnimation condition={weatherData.condition} />
+          
+          <div className="w-full grid grid-cols-2 gap-4">
+            <div className="weather-card text-center">
+              <Thermometer className="h-8 w-8 text-destructive mx-auto mb-2" />
+              <p className="text-3xl font-bold text-foreground">{weatherData.temperature}°C</p>
+              <p className="text-sm text-muted-foreground">Temperatura</p>
+            </div>
 
   useEffect(() => {
     if (!location || !date) {
@@ -165,8 +177,13 @@ const Results = () => {
           </div>
         </motion.div>
 
-        {/* Right Side */}
-        <motion.div initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.6, delay: 0.2 }} className="flex flex-col space-y-8">
+        {/* Right Side - Comfort & Probabilities */}
+        <motion.div
+          initial={{ opacity: 0, x: 50 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+          className="flex flex-col justify-center space-y-8"
+        >
           <div className="space-y-2">
             <div className="flex flex-wrap items-center gap-4">
               <h1 className="text-4xl md:text-5xl font-bold text-foreground">Conditions Analysis</h1>
@@ -181,44 +198,62 @@ const Results = () => {
             <p className="text-lg text-muted-foreground">{location || 'Location not provided'} - {date ? new Date(date).toLocaleDateString('en-US', { timeZone: 'UTC' }) : ''}</p>
           </div>
 
-          <div className="space-y-6">
-            {/* Probabilities Section */}
-            <div className="space-y-4">
-              <h2 className="text-2xl font-semibold text-foreground">Adverse Condition Probabilities</h2>
-              <div className="grid grid-cols-2 gap-4">
-                {probabilities.map((prob, index) => (
-                  <motion.div key={prob.label} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 * index }}>
-                    <ProbabilityCard label={prob.label} value={prob.value} type={prob.type} />
-                  </motion.div>
-                ))}
-              </div>
-            </div>
+          {/* Comfort Panel */}
+          <ComfortPanel temperature={weatherData.temperature} humidity={weatherData.humidity} />
 
-            {/* Comfort Level Section */}
-            <div className="space-y-4 pt-4">
-              <h2 className="text-2xl font-semibold text-foreground">Comfort Level</h2>
-              {comfortLevel && (
-                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-                  <div className="weather-card flex flex-col items-center justify-center p-6 text-center rounded-lg">
-                    <span className="text-6xl mb-2">{comfortLevel.emoji}</span>
-                    <p className="text-2xl font-bold text-foreground">{comfortLevel.level}</p>
-                  </div>
-                </motion.div>
-              )}
-            </div>
+          <div className="space-y-4">
+            <h2 className="text-2xl font-semibold text-foreground mb-4">
+              Probabilidade de Condições Adversas
+            </h2>
+            
+            {probabilities.map((prob, index) => (
+              <motion.div
+                key={prob.label}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 * index }}
+              >
+                <ProbabilityCard
+                  label={prob.label}
+                  value={prob.value}
+                  type={prob.type}
+                />
+              </motion.div>
+            ))}
+          </div>
 
-            {/* Recommendations Section */}
-            <div className="space-y-4 pt-4">
-              <h2 className="text-2xl font-semibold text-foreground">Recommendations for Your Day</h2>
-              {recommendations.map((rec, index) => (
-                <motion.div key={rec.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 + (0.1 * index) }}>
-                  <RecommendationCard icon={rec.icon} title={rec.title} description={rec.description} />
-                </motion.div>
-              ))}
-            </div>
+          {/* Bottom Action Buttons */}
+          <div className="grid grid-cols-2 gap-4">
+            <Button
+              onClick={() => setShowMoreInfo(!showMoreInfo)}
+              variant="outline"
+              className="font-semibold py-6 text-lg border-primary text-primary hover:bg-primary/10"
+            >
+              <Info className="mr-2 h-5 w-5" />
+              {showMoreInfo ? "Menos Info" : "Mais Info"}
+            </Button>
+            <Button
+              onClick={() => navigate("/recommendations", { state: location.state })}
+              className="gradient-primary text-primary-foreground font-semibold py-6 text-lg"
+            >
+              Ver Recomendações
+              <ArrowRight className="ml-2 h-5 w-5" />
+            </Button>
           </div>
         </motion.div>
       </div>
+
+      {/* Historical Chart - Expandable Section */}
+      {showMoreInfo && (
+        <motion.div
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: "auto" }}
+          exit={{ opacity: 0, height: 0 }}
+          className="max-w-7xl mx-auto mt-8"
+        >
+          <HistoricalChart />
+        </motion.div>
+      )}
     </div>
   );
 };
