@@ -1,10 +1,9 @@
 // src/components/TrendsChart.jsx
 
-import React, { useState } from 'react'; // 1. Importar o useState
+import React, { useState } from 'react'; // 1. Import useState
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
-// Componente para o estilo do texto (sem alterações)
 const CustomXAxisTick = (props) => {
   const { x, y, payload } = props;
   const year = payload.value;
@@ -19,25 +18,25 @@ const CustomXAxisTick = (props) => {
 
 
 export const TrendsChart = ({ historicalTrends, onYearClick }) => {
-  // 2. Estado para guardar os dados do ponto onde o mouse está
+
   const [activeData, setActiveData] = useState(null);
 
-  console.log('🔍 TrendsChart renderizado com:', {
+  console.log('🔍 TrendsChart rendered with:', {
     historicalTrends: !!historicalTrends,
     onYearClick: !!onYearClick,
     years: historicalTrends?.years?.length || 0
   });
 
-  // Log quando o componente é montado
+
   React.useEffect(() => {
-    console.log('🚀 TrendsChart montado!');
+    console.log('🚀 TrendsChart mounted!');
     return () => {
-      console.log('🛑 TrendsChart desmontado!');
+      console.log('🛑 TrendsChart disassembled!');
     };
   }, []);
 
   if (!historicalTrends || !historicalTrends.years || historicalTrends.years.length === 0) {
-    console.log('❌ Dados históricos ausentes ou incompletos');
+    console.log('❌ Missing or incomplete historical data');
     return (<Card className="weather-card h-96 flex items-center justify-center">
 
         <CardContent className="text-center text-muted-foreground p-4">
@@ -57,7 +56,7 @@ export const TrendsChart = ({ historicalTrends, onYearClick }) => {
     wind: historicalTrends.wind_speeds[index],
   })).sort((a, b) => a.year - b.year);
 
-  // 3. Função chamada quando o mouse se move sobre o gráfico
+
   const handleMouseMove = (state) => {
     console.log('🖱️ handleMouseMove chamado:', {
       isTooltipActive: state.isTooltipActive,
@@ -65,20 +64,19 @@ export const TrendsChart = ({ historicalTrends, onYearClick }) => {
       activeData: state.activePayload?.[0]?.payload
     });
     
-    // A 'state' vem do Recharts e contém a informação do Tooltip
+
     if (state.isTooltipActive && state.activePayload && state.activePayload.length > 0) {
-      // Guardamos o payload (os dados) do ponto ativo
+
       const newActiveData = state.activePayload[0].payload;
-      console.log('📍 Ponto ativo detectado:', newActiveData);
+      console.log('📍 Hotspot detected:', newActiveData);
       setActiveData(newActiveData);
     } else {
-      // Se o mouse sair do gráfico, limpamos o estado
-      console.log('🚫 Mouse saiu do gráfico, limpando activeData');
+o
+      console.log('🚫 Mouse left the graph, clearing activeData');
       setActiveData(null);
     }
   };
 
-  // 4. Função chamada quando o GRÁFICO INTEIRO é clicado
   const handleChartClick = (event) => {
     console.log('🖱️ handleChartClick chamado!', {
       event: event,
@@ -87,20 +85,18 @@ export const TrendsChart = ({ historicalTrends, onYearClick }) => {
       hasActiveData: !!activeData
     });
     
-    // Verificamos se há um ponto ativo (guardado pelo onMouseMove)
     if (activeData && onYearClick) {
-      console.log('✅ Chamando onYearClick com ano:', activeData.year);
-      // Usamos o ano do ponto ativo para chamar a função do pai
+      console.log('✅ Calling onYearClick with year:', activeData.year);
       onYearClick(activeData.year);
     } else {
-      console.log('❌ Não foi possível clicar:', {
+      console.log('❌ Unable to click:', {
         hasActiveData: !!activeData,
         hasOnYearClick: !!onYearClick
       });
     }
   };
 
-  console.log('📊 Dados do gráfico preparados:', {
+  console.log('📊 Prepared chart data:', {
     chartDataLength: chartData.length,
     firstDataPoint: chartData[0],
     lastDataPoint: chartData[chartData.length - 1]
@@ -114,17 +110,17 @@ export const TrendsChart = ({ historicalTrends, onYearClick }) => {
       
       <CardContent style={{ height: '400px', width: '100%' }}>
         <ResponsiveContainer width="100%" height="100%">
-          {/* 5. Adicionar os handlers ao LineChart */}
+          {/* 5. Add handlers ao LineChart */}
           <LineChart 
             data={chartData} 
             margin={{ top: 5, right: 20, left: -10, bottom: 20 }}
             onMouseMove={handleMouseMove}
             onClick={handleChartClick}
-            style={{ cursor: 'pointer' }} // Cursor para o gráfico todo
+            style={{ cursor: 'pointer' }} 
           >
             <CartesianGrid strokeDasharray="3 3" strokeOpacity={0.2} />
             
-            {/* O onClick foi REMOVIDO daqui para evitar conflito */}
+            {/* onClick has been REMOVED from here to avoid conflict */}
             <XAxis 
               dataKey="year" 
               tick={<CustomXAxisTick />} 
@@ -134,7 +130,7 @@ export const TrendsChart = ({ historicalTrends, onYearClick }) => {
             <YAxis yAxisId="left" stroke="hsl(var(--destructive))" domain={['dataMin - 2', 'dataMax + 2']} />
             <YAxis yAxisId="right" orientation="right" stroke="hsl(var(--primary))" domain={[0, 100]} />
             
-            {/* O Tooltip agora tem um papel ativo na lógica */}
+            {/* The Tooltip now plays an active role in the logic */}
             <Tooltip />
 
             <Legend wrapperStyle={{ bottom: -15 }}/>
