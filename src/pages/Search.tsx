@@ -170,7 +170,7 @@ const Search = () => {
             {/* Map Selector */}
             <div className="space-y-2">
               <label className="text-sm font-medium text-foreground">
-                Selecione no mapa ou arraste o marcador
+                 Select on the map or drag the marker
               </label>
               <MapSelector position={mapPosition} onPositionChange={handleMapPositionChange} />
               <p className="text-xs text-muted-foreground">
