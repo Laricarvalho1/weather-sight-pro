@@ -12,17 +12,17 @@ const ShareButton = ({ location }: ShareButtonProps) => {
 
   const copyLink = () => {
     navigator.clipboard.writeText(shareUrl);
-    toast.success("Link copiado para a área de transferência!");
+    toast.success("Link copied to clipboard!");
   };
 
   const shareEmail = () => {
-    const subject = `Análise Climática - ${location}`;
-    const body = `Confira a análise climática de ${location}: ${shareUrl}`;
+    const subject = `Climate Analysis - ${location}`;
+    const body = `Check out the climate analysis of ${location}: ${shareUrl}`;
     window.open(`mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`);
   };
 
   const shareTwitter = () => {
-    const text = `Análise Climática de ${location}`;
+    const text = `Climate Analysis ${location}`;
     window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(shareUrl)}`);
   };
 
