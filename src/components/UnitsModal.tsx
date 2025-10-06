@@ -24,16 +24,16 @@ const UnitsModal = () => {
       </DialogTrigger>
       <DialogContent className="sm:max-w-md bg-card border-border">
         <DialogHeader>
-          <DialogTitle className="text-foreground">Unidades de Medida</DialogTitle>
+          <DialogTitle className="text-foreground">Units of Measurement</DialogTitle>
         </DialogHeader>
         
         <div className="space-y-4">
           <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
-            <span className="text-sm font-medium text-foreground">Sistema de Medidas</span>
+            <span className="text-sm font-medium text-foreground">Measurement System</span>
             <div className="flex items-center gap-2">
               <span className="text-sm text-muted-foreground">Imperial</span>
               <Switch checked={isMetric} onCheckedChange={setIsMetric} />
-              <span className="text-sm text-muted-foreground">Métrico</span>
+              <span className="text-sm text-muted-foreground">Metric</span>
             </div>
           </div>
 
@@ -50,7 +50,7 @@ const UnitsModal = () => {
 
           <div className="bg-info/10 p-3 rounded-lg border border-info/20">
             <p className="text-xs text-info">
-              💡 As unidades SI (Sistema Internacional) são utilizadas por padrão para precisão científica.
+              💡 SI (International System) units are used by default for scientific accuracy.
             </p>
           </div>
         </div>
