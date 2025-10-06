@@ -72,33 +72,52 @@ const Results = () => {
             </div>
 
   useEffect(() => {
+    const controller = new AbortController();
+    const signal = controller.signal;
+
     if (!location || !date) {
       setError("Invalid search data. Please go back and try again.");
       setIsLoading(false);
       return;
     }
 
-    const callBackendAPI = async () => {
+    const callAPI = async () => {
+      setIsLoading(true);
+      setError(null);
       try {
-        const backendUrl = 'https://isotropic-geratologic-cali.ngrok-free.dev/analyze';
-        const formattedDate = new Date(date).toISOString().split('T')[0];
-        const requestData = { location: location, date: formattedDate };
+        // --- STEP 1: GATHER ALL DATA FIRST ---
 
+        // A) Fetch coordinates from location name
+        console.log(`Fetching coordinates for: ${location}`);
+        const geoResponse = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(location)}`, { signal });
+        const geoData = await geoResponse.json();
+        if (!geoData || geoData.length === 0) {
+          throw new Error(`Could not find coordinates for "${location}".`);
+        }
+        const lat = parseFloat(geoData[0].lat);
+        const lon = parseFloat(geoData[0].lon);
+        // Hold onto the coords, but don't set state yet
+        const coords = { lat, lon };
+        console.log("Coordinates found:", coords);
+        
+        // B) Fetch main backend data
+        const backendUrl = 'https://weather-sight-back.onrender.com/analyze';
+        const formattedDate = new Date(date).toISOString().split('T')[0];
+        const requestData = { location, date: formattedDate, latitude: lat, longitude: lon };
         const response = await fetch(backendUrl, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'ngrok-skip-browser-warning': 'true'
-          },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(requestData),
+          signal: signal
         });
-
         if (!response.ok) {
           const errorData = await response.json();
           throw new Error(errorData.error || `A server error occurred.`);
         }
-
         const data = await response.json();
+        
+        // --- STEP 2: PROCESS AND SET ALL STATES AT ONCE ---
+        
         const analysis = data.weather_analysis;
 
         const newWeatherData = {
@@ -106,32 +125,37 @@ const Results = () => {
           humidity: analysis.average_humidity_percent,
           rainfall: analysis.chance_of_any_rain_percent,
           wind: analysis.average_wind_speed_kmh,
-          condition: analysis.chance_of_rainy_day_percent > 30 ? "rainy" : (analysis.average_temperature_celsius > 28 ? "sunny" : "cloudy"),
+          condition: (analysis.chance_of_any_rain_percent || 0) > 40 ? "rainy" : (analysis.average_temperature_celsius > 28 ? "sunny" : "cloudy"),
         };
-
-        const newProbabilities = [
-          { label: "Probability of a Hot Day", value: analysis.chance_of_hot_day_percent, type: "danger" },
-          { label: "Probability of Heavy Rain", value: analysis.chance_of_rainy_day_percent, type: "info" },
-          { label: "Probability of Strong Wind", value: analysis.chance_of_windy_day_percent, type: "info" },
-          { label: "Probability of a Cold Day", value: analysis.chance_of_cold_day_percent, type: "info" },
-        ];
+        const newProbabilities = calculateAdverseProbabilities(newWeatherData);
         
+        // Now, update all states together at the end
         setWeatherData(newWeatherData);
         setProbabilities(newProbabilities);
+        setLocationCoords(coords); // Set coordinates here
         setNasaUrl(data.nasa_satellite_view_url);
-        
+        setHistoricalTrendsData(analysis.historical_trends);
+        setMapDate(new Date(date)); // Initialize map date here
         setComfortLevel(calculateComfortLevel(newWeatherData, newProbabilities));
         setRecommendations(getRecommendations(newWeatherData, newProbabilities, 3));
 
       } catch (err) {
-        console.error("Failed to connect to the backend:", err);
-        setError(err.message || "Could not load data. Please check your connection.");
+        if (err.name === 'AbortError') {
+          console.log('Fetch aborted by cleanup');
+        } else {
+          console.error("Error during data fetching:", err);
+          setError(err.message || "Could not load data. Please check your connection.");
+        }
       } finally {
         setIsLoading(false);
       }
     };
 
-    callBackendAPI();
+    callAPI();
+
+    return () => {
+      controller.abort();
+    };
   }, [location, date]);
 
   if (isLoading) {
@@ -159,16 +183,20 @@ const Results = () => {
   }
 
   return (
-    <div className="min-h-screen w-full bg-background flex items-start justify-center p-4 md:p-8 relative">
-      <Button onClick={() => navigate('/')} variant="outline" className="absolute top-4 left-4 md:top-8 md:left-8 z-10">
-        <ArrowLeft className="mr-2 h-4 w-4" />
-        New Search
-      </Button>
+    <>
+    <div className="min-h-screen w-full bg-background flex flex-col items-center p-4 md:p-8 relative">
+      <div className="w-full max-w-7xl">
+        <Button onClick={() => navigate('/')} variant="outline" className="absolute top-4 left-4 md:top-8 md:left-8 z-10">
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          New Search
+        </Button>
+      </div>
 
       <div className="w-full max-w-7xl grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 mt-24">
-        {/* Left Side */}
-        <motion.div initial={{ opacity: 0, x: -50 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.6 }} className="flex flex-col items-center space-y-8">
-          {weatherData && <WeatherAnimation condition={weatherData.condition} />}
+        
+        <motion.div initial={{ opacity: 0, x: -50 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.6, delay: 0.1 }} className="flex flex-col items-center space-y-8">
+          <WeatherAnimation condition={weatherData?.condition} />
+          
           <div className="w-full grid grid-cols-2 gap-4">
             <div className="weather-card text-center"><Thermometer className="h-8 w-8 text-destructive mx-auto mb-2" /><p className="text-3xl font-bold text-foreground">{weatherData?.temperature.toFixed(1)}°C</p><p className="text-sm text-muted-foreground">Average Temperature</p></div>
             <div className="weather-card text-center"><Droplets className="h-8 w-8 text-info mx-auto mb-2" /><p className="text-3xl font-bold text-foreground">{weatherData?.humidity.toFixed(1)}%</p><p className="text-sm text-muted-foreground">Average Humidity</p></div>
@@ -197,6 +225,18 @@ const Results = () => {
             </div>
             <p className="text-lg text-muted-foreground">{location || 'Location not provided'} - {date ? new Date(date).toLocaleDateString('en-US', { timeZone: 'UTC' }) : ''}</p>
           </div>
+          
+          <div className="space-y-4">
+            <h2 className="text-2xl font-semibold text-foreground">Adverse Condition Probabilities</h2>
+            <div className="grid grid-cols-2 gap-4">
+              {probabilities.map((prob, index) => (
+                <motion.div key={prob.label} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 + (0.1 * index) }}>
+                  <ProbabilityCard label={prob.label} value={prob.value} type={prob.type} />
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </motion.div>
 
           {/* Comfort Panel */}
           <ComfortPanel temperature={weatherData.temperature} humidity={weatherData.humidity} />
@@ -255,6 +295,16 @@ const Results = () => {
         </motion.div>
       )}
     </div>
+     {locationCoords && (
+        <MapModal
+          isOpen={isModalOpen}
+          onClose={handleCloseModal}
+          year={modalYear}
+          latitude={locationCoords.lat}
+          longitude={locationCoords.lon}
+        />
+      )}
+    </>
   );
 };
 

@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { format, getYear, getMonth, setYear, setMonth, addYears, subYears } from "date-fns";
-import { enUS } from "date-fns/locale"; // Changed from ptBR to enUS
+import { enUS } from "date-fns/locale"; 
 import GlobeAnimation from "@/components/GlobeAnimation";
 import WeatherSummary from "@/components/WeatherSummary";
 import MapSelector from "@/components/MapSelector";
@@ -54,7 +54,6 @@ const Search = () => {
   return (
     <div className="min-h-screen w-full bg-background flex items-center justify-center p-4 md:p-8">
       <div className="w-full max-w-7xl grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
-        {/* Left Side - Globe Animation & NEW Tip Carousel */}
         <motion.div
           initial={{ opacity: 0, x: -50 }}
           animate={{ opacity: 1, x: 0 }}

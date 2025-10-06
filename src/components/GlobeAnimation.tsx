@@ -7,7 +7,7 @@ function GlobeElements() {
   const globeRef = useRef();
 
   // Load our single, lightweight continent texture
-  const [continentTexture] = useTexture(['/textures/continents.jpg']);
+  const [continentTexture] = useTexture(['/textures/continents.png']);
 
   // Animate the rotation on every frame
   useFrame(({ clock }) => {
