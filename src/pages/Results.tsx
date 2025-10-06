@@ -18,7 +18,6 @@ const Results = () => {
   const { location: city, date } = location.state || {};
   const [showMoreInfo, setShowMoreInfo] = useState(false);
 
-  // Mock data - será substituído pela API Python
   const weatherData = {
     condition: "sunny" as const,
     temperature: 32,
