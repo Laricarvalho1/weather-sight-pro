@@ -63,7 +63,7 @@ export const LeafletMap = ({ latitude, longitude, displayDate }) => {
       const day = dateObj.getDate().toString().padStart(2, '0');
       const fullDateForYear = `${year}-${month}-${day}`;
 
-      const gibsUrl = `https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/MODIS_Terra_CorrectedReflectance_TrueColor/default/${fullDateForYear}/GoogleMapsCompatible_Level9/{z}/{y}/{x}.jpg`;
+      const gibsUrl = `https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/VIIRS_SNPP_CorrectedReflectance_TrueColor/default/${fullDateForYear}/GoogleMapsCompatible_Level9/{z}/{y}/{x}.jpg`;
       
       console.log('🔗 URL do GIBS:', gibsUrl);
       
