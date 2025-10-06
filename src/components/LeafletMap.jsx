@@ -15,7 +15,7 @@ export const LeafletMap = ({ latitude, longitude, displayDate }) => {
   
   // This is the main hook for creating and updating the map
   useEffect(() => {
-    console.log('🔄 LeafletMap useEffect executado:', {
+    console.log('🔄 LeafletMap useEffect executed:', {
       latitude,
       longitude,
       displayDate,
@@ -25,13 +25,12 @@ export const LeafletMap = ({ latitude, longitude, displayDate }) => {
     
     // 1. First, do nothing until we have the coordinates and the container div is ready.
     if (!latitude || !longitude || !mapContainerRef.current) {
-      console.log('❌ LeafletMap: Coordenadas ou container não disponíveis');
+      console.log('❌ LeafletMap: Coordinates or container not available');
       return; 
     }
 
-    // Pequeno delay para garantir que o DOM esteja pronto
     const timeoutId = setTimeout(() => {
-      console.log('⏰ Executando criação do mapa após delay');
+      console.log('⏰ Running map creation after delay');
       createOrUpdateMap();
     }, 100);
 
@@ -39,24 +38,24 @@ export const LeafletMap = ({ latitude, longitude, displayDate }) => {
 
     // 2. This is your "if (!map)" block. We check the ref. If it's null, we create the map.
     if (!mapInstanceRef.current) {
-      console.log('🆕 Criando novo mapa Leaflet');
+      console.log('🆕 Creating a new Leaflet map');
       mapInstanceRef.current = L.map(mapContainerRef.current, {
         center: [latitude, longitude],
         zoom: 7,
         zoomControl: true,
         attributionControl: false,
       });
-      console.log('✅ Mapa criado com sucesso');
+      console.log('✅ Map successfully created');
     } else {
       // 3. This is your "else" block. If the map already exists, we just update its view.
-      console.log('🔄 Atualizando vista do mapa existente');
+      console.log('🔄 Updating existing map view');
       mapInstanceRef.current.setView([latitude, longitude]);
     }
 
     // 4. This logic for updating the satellite image layer now runs correctly
     //    because we know for sure the map instance exists.
     if (mapInstanceRef.current && displayDate) {
-      console.log('🛰️ Configurando camada de satélite para data:', displayDate);
+      console.log('🛰️ Configuring satellite layer for data:', displayDate);
       const dateObj = new Date(displayDate);
       const year = dateObj.getFullYear();
       const month = (dateObj.getMonth() + 1).toString().padStart(2, '0');
@@ -86,12 +85,12 @@ export const LeafletMap = ({ latitude, longitude, displayDate }) => {
       });
 
       tileLayerRef.current.on('tileload', () => {
-        console.log('✅ Tile carregado com sucesso');
+        console.log('✅ Tile successfully loaded');
       });
 
-      console.log('➕ Adicionando camada ao mapa');
+      console.log('➕ Adding a layer to the map');
       tileLayerRef.current.addTo(mapInstanceRef.current);
-      console.log('✅ Camada adicionada com sucesso');
+      console.log('✅ Layer successfully added');
     }
     }
 
