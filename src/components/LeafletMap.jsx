@@ -6,7 +6,7 @@ export const LeafletMap = ({ latitude, longitude, displayDate }) => {
   const mapInstanceRef = useRef(null);
   const tileLayerRef = useRef(null);
   
-  console.log('🗺️ LeafletMap renderizado com:', {
+  console.log('🗺️ LeafletMap rendered with:', {
     latitude,
     longitude,
     displayDate,
