@@ -1,12 +1,12 @@
 // src/components/MapModal.jsx
 
 import React from 'react';
-import { LeafletMap } from './LeafletMap'; // Ajuste o caminho se necessário
+import { LeafletMap } from './LeafletMap'; 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { X } from 'lucide-react';
 
 export const MapModal = ({ isOpen, onClose, year, latitude, longitude }) => {
-  console.log('🚪 MapModal renderizado com:', {
+  console.log('🚪 MapModal rendered with:', {
     isOpen,
     year,
     latitude,
@@ -14,14 +14,12 @@ export const MapModal = ({ isOpen, onClose, year, latitude, longitude }) => {
   });
 
   if (!isOpen) {
-    console.log('❌ MapModal não está aberto');
+    console.log('❌ MapModal is not open');
     return null;
   }
 
-  // A API da NASA GIBS precisa de uma data completa (YYYY-MM-DD).
-  // Usamos o meio do ano para ter uma imagem representativa.
   const displayDate = `${year}-07-01`;
-  console.log('📅 Data de exibição calculada:', displayDate);
+  console.log('📅 Calculated display date:', displayDate);
 
   return (
     // Backdrop
@@ -45,7 +43,7 @@ export const MapModal = ({ isOpen, onClose, year, latitude, longitude }) => {
             {latitude && longitude ? (
               <>
                 <p className="text-sm text-muted-foreground mb-2">
-                  Coordenadas: {latitude.toFixed(4)}, {longitude.toFixed(4)}
+                  Coordinates: {latitude.toFixed(4)}, {longitude.toFixed(4)}
                 </p>
                 <LeafletMap 
                   latitude={latitude}
@@ -55,7 +53,7 @@ export const MapModal = ({ isOpen, onClose, year, latitude, longitude }) => {
               </>
             ) : (
               <div className="w-full h-80 flex items-center justify-center">
-                <p className="text-muted-foreground">Coordenadas inválidas.</p>
+                <p className="text-muted-foreground">Invalid coordinates.</p>
               </div>
             )}
           </CardContent>
