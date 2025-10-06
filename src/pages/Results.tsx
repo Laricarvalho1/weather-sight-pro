@@ -47,8 +47,8 @@ const Results = () => {
           Voltar
         </Button>
         <div className="flex gap-2">
-          <ExportButton data={weatherData} location={city || "Localização"} />
-          <ShareButton location={city || "Localização"} />
+          <ExportButton data={weatherData} location={city || "Location"} />
+          <ShareButton location={city || "Location"} />
           <UnitsModal />
         </div>
       </div>
