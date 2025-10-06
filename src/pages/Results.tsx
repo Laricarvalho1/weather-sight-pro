@@ -27,10 +27,10 @@ const Results = () => {
   };
 
   const probabilities = [
-    { label: "Muito Quente", value: 85, type: "danger" as const },
-    { label: "Muita Chuva", value: 20, type: "info" as const },
-    { label: "Muito Vento", value: 35, type: "info" as const },
-    { label: "Muito Desconfortável", value: 70, type: "danger" as const },
+    { label: "Very Hot", value: 85, type: "danger" as const },
+    { label: "Very Rainy", value: 20, type: "info" as const },
+    { label: "Very Wind", value: 35, type: "info" as const },
+    { label: "Very Uncomfortable", value: 70, type: "danger" as const },
   ];
 
   return (
