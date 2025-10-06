@@ -9,86 +9,45 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { format, getYear, getMonth, setYear, setMonth, addYears, subYears } from "date-fns";
 import { enUS } from "date-fns/locale"; 
 import GlobeAnimation from "@/components/GlobeAnimation";
-
-const capitalize = (s) => s.charAt(0).toUpperCase() + s.slice(1);
-
-const TIPS = [
-  {
-    icon: Zap,
-    title: "Did You Know?",
-    description: "Our analysis uses over 20 years of historical data to find weather patterns for your specific date.",
-  },
-  {
-    icon: CalendarCheck,
-    title: "Plan Your Events",
-    description: "Check the historical weather for a future date to better plan outdoor weddings, trips, or parties.",
-  },
-  {
-    icon: PartyPopper,
-    title: "Explore Extremes",
-    description: "Try searching for famously hot or cold places like Death Valley, USA or Oymyakon, Russia to see their climate history.",
-  },
-];
-
-const TipCarousel = () => {
-  const [currentTipIndex, setCurrentTipIndex] = useState(0);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentTipIndex((prevIndex) => (prevIndex + 1) % TIPS.length);
-    }, 5000);
-
-    return () => clearInterval(interval); 
-  }, []);
-
-  const activeTip = TIPS[currentTipIndex];
-
-  return (
-    <div className="w-full weather-card p-6 text-center">
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={currentTipIndex}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -20 }}
-          transition={{ duration: 0.5 }}
-          className="flex flex-col items-center space-y-3"
-        >
-          <div className="flex items-center gap-2">
-            <activeTip.icon className="h-5 w-5 text-primary" />
-            <h3 className="font-bold text-lg text-foreground">{activeTip.title}</h3>
-          </div>
-          <p className="text-muted-foreground text-sm">{activeTip.description}</p>
-        </motion.div>
-      </AnimatePresence>
-    </div>
-  );
-};
-
+import WeatherSummary from "@/components/WeatherSummary";
+import MapSelector from "@/components/MapSelector";
+import ClimateFactsWidget from "@/components/ClimateFactsWidget";
 
 const Search = () => {
   const navigate = useNavigate();
-  
-  const [locationInput, setLocationInput] = useState("");
-  const [date, setDate] = useState(undefined);
-  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
-  const [view, setView] = useState('days');
-  const [displayDate, setDisplayDate] = useState(date || new Date());
-
-  const handleDateSelect = (selectedDate) => {
-    setDate(selectedDate);
-    setIsCalendarOpen(false);
-    setView('days');
-  };
+  const [location, setLocation] = useState("");
+  const [date, setDate] = useState<Date>();
+  const [mapPosition, setMapPosition] = useState<[number, number]>([-10.9472, -37.0731]); // Aracaju default
 
   const handleSearch = () => {
-    if (locationInput && date) {
+    if (location && date) {
       navigate("/results", { 
-        state: { location: locationInput, date: date.toISOString() } 
+        state: { 
+          location, 
+          date: date.toISOString(),
+          coordinates: mapPosition 
+        } 
       });
     }
   };
 
+  const handleMapPositionChange = async (lat: number, lng: number) => {
+    setMapPosition([lat, lng]);
+    
+    // Reverse geocoding to get location name
+    try {
+      const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`);
+      const data = await response.json();
+      const city = data.address.city || data.address.town || data.address.village || data.address.county;
+      if (city) {
+        setLocation(city);
+      }
+    } catch (error) {
+      console.error("Error getting location name:", error);
+    }
+  };
+
+  // Logic for the calendar's year view
   const startYearOfDecade = getYear(displayDate) - (getYear(displayDate) % 10);
   const years = Array.from({ length: 12 }, (_, i) => startYearOfDecade + i - 1);
 
@@ -102,7 +61,8 @@ const Search = () => {
           className="flex flex-col items-center justify-center space-y-8"
         >
           <GlobeAnimation />
-          <TipCarousel />
+          <WeatherSummary />
+          <ClimateFactsWidget />
         </motion.div>
 
         {/* Right Side - Search Form */}
@@ -205,6 +165,17 @@ const Search = () => {
                   )}
                 </PopoverContent>
               </Popover>
+            </div>
+
+            {/* Map Selector */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-foreground">
+                Selecione no mapa ou arraste o marcador
+              </label>
+              <MapSelector position={mapPosition} onPositionChange={handleMapPositionChange} />
+              <p className="text-xs text-muted-foreground">
+                Coordenadas: {mapPosition[0].toFixed(4)}, {mapPosition[1].toFixed(4)}
+              </p>
             </div>
 
             {/* Search Button */}
